@@ -9,57 +9,56 @@ import (
 	"time"
 )
 
-const TEMPLATE = `
-    {{define "item"}}
-        <tr><td>{{.Name}}</td><td>{{.Created.Format "2006-01-02 15:04:05" }}</td><td><input type="checkbox" value="{{.Done}}"><label>Done</label></input></td>
-    {{end}}
-<html>
-    <head>
-        <title>Hello World</title>
-    </head>
-    <body>
-        <h1>Hello World</h1>
-        <table>
-    {{range .}}
-    <tr>
-        {{template "item" .}}
-    </tr>
-    {{end}}
+var tpl *template.Template
+var err error
 
-        </table>
-    </body>
-    `
+func init() {
+    tpl = template.Must( template.ParseGlob("view/*.html"))
+}
 
 func hello(w http.ResponseWriter, r *http.Request) {
-    exampleData := []model.ExampleData{{ Name: "Mow Lawn", Created: time.Now() }, { Name: "Take Out Trash", Created: time.Now() }}
-    
+    println("Call to hello")
+    exampleData := []model.ExampleData{{ Name: "Mow Lawn", Created: time.Now() , Done: true, Id: 1}, { Name: "Take Out Trash", Created: time.Now(), Done: false, Id: 2}}
     var buf bytes.Buffer
     writer := io.Writer(&buf)
     w.Header().Set("Content-Type", "text/html")
-
-    //io.WriteString(writer,`
-//<html>
-    //<head>
-        //<title>Hello World</title>
-    //</head>
-    //<body>
-        //<h1>Hello World</h1>
-        //<table>
-        //`)
-    //model.AllAsHtml( &exampleData, &writer)
-    //io.WriteString(writer,`
-        //</table>
-    //</body>`)
-
-    t := template.Must(template.New("html").Parse(TEMPLATE))
-    t.Execute(writer, exampleData)
+    err := tpl.ExecuteTemplate(writer,"view.html", exampleData)
+    if err != nil {
+        println("Error with template ", err.Error())
+    }
     w.Write(buf.Bytes())
-    
 }
 
 func main() {
-    http.HandleFunc("/", hello)
+    http.Handle("/view/", http.FileServer(http.Dir(".")))
+    http.HandleFunc("/hello", hello)
+    //http.HandleFunc("/save", save)
+    http.HandleFunc("/edit", edit)
     http.ListenAndServe(":8080", nil)
+}
 
-    // test stuff
+//func save(w http.ResponseWriter, r *http.Request) {
+    //var buf bytes.Buffer
+    ////writer := io.Writer(&buf)
+    //w.Header().Set("Content-Type", "text/html")
+    //tpl.Parse(`{{ template "row_item" . }}`)
+    ////tpl.Execute(writer)
+    //w.Write(buf.Bytes())
+//}
+
+func edit(w http.ResponseWriter, r *http.Request) {
+    println("Call to edit")
+    err := r.ParseForm()
+    if err != nil {
+        panic(err)
+    }
+    created, _ := time.Parse("", r.PostForm.Get("Created"))
+    done := r.PostForm.Get("Done") == "true"
+    exampleData := model.ExampleData{Name: r.PostForm.Get("Name"), Created: created , Done: done}
+    var buf bytes.Buffer
+    writer := io.Writer(&buf)
+    w.Header().Set("Content-Type", "text/html")
+    tpl.Parse(` {{ template "row_item_as_form". }} `)
+    tpl.Execute(writer, exampleData)
+    w.Write(buf.Bytes())
 }

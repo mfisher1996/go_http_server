@@ -1,33 +1,63 @@
 package model
 
 import (
-    "html/template";
-    "io";
-    "time";
+	"encoding/csv"
+	"strconv"
+    "os"
+	"time"
 )
 
-const ITEM_TEMPLATE = `<td>{{.Name}}</td><td>{{.Created.Format "2006-01-02 15:04:05" }}</td><td><checkbox value="{{.Done}}"></checkbox></td>`
-const LIST_TEMPLATE = `<table>
-    <tr><th>Name</th><th>Created</th></tr>
-    {{range . }}
-    <tr><td>{{.Name}}</td><td>{{.Created.Format "2006-01-02 15:04:05" }}</td></tr>
-    {{end}}
-</table>`//Template
-
 type ExampleData struct {
-    // todo task
     Name string
     Created time.Time
     Done bool
-
+    Id int
 }
 
-func AllAsHtml(d *[]ExampleData, writer *io.Writer) {
-    t := template.Must(template.New("html").Parse(LIST_TEMPLATE))
-    t.ExecuteTemplate(*writer,"html", d)
+// Reads the data from a csv file.
+// todo: Maybe replace this with database access?
+func Read(path string) []ExampleData {
+    var data []ExampleData
+    file, err := os.Open(path)
+    if err != nil {
+        panic(err)
+    }
+    // make sure file closes 
+    defer file.Close()
+    reader, err := csv.NewReader(file).ReadAll()
+    if err != nil {
+        panic(err)
+    }
+    for i, row := range reader {
+        var name string
+        var created time.Time
+        var done bool
+        id := i + 1
+        for j, value := range row {
+            switch j {
+            case 0: name = value
+            case 1: created, _ = time.Parse("2006-01-02 15:04:05", value)
+            case 2: done, _ = strconv.ParseBool(value)
+            } 
+        }
+        data = append(data, ExampleData{Name: name, Created: created, Done: done, Id: id})
+    }
+    return data
 }
 
-func (e ExampleData) AsHtml(writer *io.Writer) {
-    t := template.Must(template.New("html").Parse(ITEM_TEMPLATE)) 
-    t.Execute(*writer, e)
+// Writes the data to a csv file.
+// todo: Maybe replace this with database access?
+func Save(data []ExampleData) {
+    file, err := os.Create("example.csv")
+    if err != nil {
+        panic(err)
+    }
+    // make sure file closes 
+    defer file.Close()
+    writer := csv.NewWriter(file)
+    for _, row := range data {
+        writer.Write([]string{row.Name, row.Created.Format("2006-01-02 15:04:05"), strconv.FormatBool(row.Done)})
+    }
+    writer.Flush()
 }
+
