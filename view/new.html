@@ -1,0 +1,21 @@
+<tr hidden id="head_row"></tr>
+<tr id="item_{{.Id}}" class="table-row hover:bg-gray-500">
+    <form id="edit_form" hx-post="/save" hx-target="#item_{{.Id}}" hx-swap="outerHTML">
+        <input type="hidden" name="Id" value="{{.Id}}"/>
+        <td class="table-cell hover:bg-blue-400">
+            <input type="textbox" name="Name" value="{{.Name}}"/>
+        </td>
+        <td class="table-cell hover:bg-blue-400">
+            <input type="textbox" name="Created" value="{{.Created.Format "2006-01-02 15:04:05" }}"/>
+        </td>
+        <td class="table-cell hover:bg-blue-400">
+            <label>
+                Done
+            </label>
+            <input type="checkbox" name="Done" value="{{.Done}}"/>
+        </td>
+        <td class="rounded-md bg-blue-400 hover:bg-blue-500" >
+            <input type="submit" form="edit_form" value="Save"/>
+        </td>
+    <form>
+</tr>

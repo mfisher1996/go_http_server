@@ -1,0 +1,19 @@
+{{define "taks_list"}}
+<table class="table-auto bg-gray-400">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Created</th>
+            <th>Done</th>
+        </tr>
+    </thead>
+    <tbody>
+        {{range .}}
+        <tr hidden id="head_row"></tr>
+            {{template "row_item" .}}
+        {{ else }}
+        <tr hidden id="head_row"></tr>
+        {{end}}
+    </tbody>
+</table>
+{{end}}

@@ -1,0 +1,19 @@
+{{define "row_item"}}
+<tr id="item_{{.Id}}" class="table-row hover:bg-gray-500 mx-5">
+    <td class="table-cell hover:text-white hover:bg-blue-400">
+        {{.Name}}
+    </td>
+    <td class="table-cell hover:text-white hover:bg-blue-400">
+        {{.Created.Format "2006-01-02 15:04:05" }}
+    </td>
+    <td class="table-cell hover:text-white hover:bg-blue-400">
+        <label>Done</label>
+        <input type="checkbox" value="{{.Done}}"/>
+    </td>
+    <td>
+        <button class="rounded-md bg-blue-400 hover:bg-blue-500" hx-post="/edit/{{.Id}}" hx-target="#item_{{.Id}}" hx-swap="outerHTML">Edit</button>
+    </td>
+</tr>
+{{end}}
+
+{{ template "row_item" . }}
