@@ -8,14 +8,18 @@ import (
 )
 
 type ExampleData struct {
-    Name string
-    Created time.Time
-    Done bool
-    Id int
+    Name string 
+    Created time.Time 
+    Done bool 
+    Id int 
+}
+func (data ExampleData) Csv() string {
+    return strconv.Itoa(data.Id) + "," + data.Name + "," + data.Created.Format("2006-01-02 15:04:05") + "," + strconv.FormatBool(data.Done)
 }
 
 // Reads the data from a csv file.
 // todo: Maybe replace this with database access?
+// update: Not used after sqlx impl
 func Read(path string) []ExampleData {
     var data []ExampleData
     file, err := os.Open(path)
@@ -47,6 +51,7 @@ func Read(path string) []ExampleData {
 
 // Writes the data to a csv file.
 // todo: Maybe replace this with database access?
+// update: Not used after sqlx impl
 func Save(data []ExampleData) {
     file, err := os.Create("example.csv")
     if err != nil {
@@ -60,4 +65,3 @@ func Save(data []ExampleData) {
     }
     writer.Flush()
 }
-
